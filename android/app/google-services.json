@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "476263611129",
+    "project_id": "clubappfinal",
+    "storage_bucket": "clubappfinal.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:476263611129:android:22ad43148b8ad2ad794028",
+        "android_client_info": {
+          "package_name": "com.syntex.club"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCd7wseFqrTO6F1yajfhbwTsYdl6yxJ6bQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
