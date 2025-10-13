@@ -1,10 +1,23 @@
-enum Role { admin, committee, member }
-
 class UserModel {
-  final String id;
-  final String name;
-  final String email;
-  final Role role;
+  final String uid;
+  final String? email;
+  final String? displayName;
+  final String role;
+  final String status;
+  final String? phone;
+  final String? address;
+  final String? bloodGroup;
+  final String? profession;
 
-  UserModel({required this.id, required this.name, required this.email, required this.role});
+  UserModel({
+    required this.uid,
+    this.email,
+    this.displayName,
+    required this.role,
+    required this.status,
+    this.phone,
+    this.address,
+    this.bloodGroup,
+    this.profession,
+  });
 }

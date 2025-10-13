@@ -1,9 +1,17 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Member {
   final String id;
   final String name;
   final String email;
   final String phone;
-  final String profileImage; // URL or asset path
+  final String profileImage;
+  final String status;
+  // --- নতুন ফিল্ড ---
+  final String? address;
+  final String? bloodGroup;
+  final String? profession;
+  final String? subscriptionPlanId;
 
   Member({
     required this.id,
@@ -11,24 +19,40 @@ class Member {
     required this.email,
     required this.phone,
     required this.profileImage,
+    required this.status,
+    this.address,
+    this.bloodGroup,
+    this.profession,
+    this.subscriptionPlanId,
   });
 
-  factory Member.fromMap(String id, Map<String, dynamic> map) {
+  factory Member.fromMap(String id, Map<String, dynamic> data) {
     return Member(
       id: id,
-      name: map['name'] ?? '',
-      email: map['email'] ?? '',
-      phone: map['phone'] ?? '',
-      profileImage: map['profileImage'] ?? '',
+      name: data['name'] ?? '',
+      email: data['email'] ?? '',
+      phone: data['phone'] ?? '',
+      profileImage: data['profileImage'] ?? '',
+      status: data['status'] ?? 'Approved',
+      address: data['address'],
+      bloodGroup: data['bloodGroup'],
+      profession: data['profession'],
+      subscriptionPlanId: data['subscriptionPlanId'], // Map this field
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
+      'id': id,
       'name': name,
       'email': email,
       'phone': phone,
       'profileImage': profileImage,
+      'status': status,
+      'address': address,
+      'bloodGroup': bloodGroup,
+      'profession': profession,
+      'subscriptionPlanId': subscriptionPlanId, // Map this field
     };
   }
 }

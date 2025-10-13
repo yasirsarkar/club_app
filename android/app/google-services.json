@@ -12,7 +12,20 @@
           "package_name": "com.syntex.club"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "476263611129-t4mn2pehou4psc3tqu9js8tn21q3pn90.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.syntex.club",
+            "certificate_hash": "96c28387e3f94d1096476e874a3d230572bbfab6"
+          }
+        },
+        {
+          "client_id": "476263611129-shckkems6dchgeroq1hl2qh64mf3abs0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyCd7wseFqrTO6F1yajfhbwTsYdl6yxJ6bQ"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "476263611129-shckkems6dchgeroq1hl2qh64mf3abs0.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "476263611129-lncnue0djf1r8qlfek06norkqiidl056.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.clubAppNew"
+              }
+            }
+          ]
         }
       }
     }

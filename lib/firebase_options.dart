@@ -54,6 +54,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '476263611129',
     projectId: 'clubappfinal',
     storageBucket: 'clubappfinal.firebasestorage.app',
+    androidClientId: '476263611129-t4mn2pehou4psc3tqu9js8tn21q3pn90.apps.googleusercontent.com',
+    iosClientId: '476263611129-udfntm0hstcgiqkmdu9kln1ohklf86ts.apps.googleusercontent.com',
     iosBundleId: 'com.syntex.club',
   );
 
@@ -73,6 +75,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '476263611129',
     projectId: 'clubappfinal',
     storageBucket: 'clubappfinal.firebasestorage.app',
+    androidClientId: '476263611129-t4mn2pehou4psc3tqu9js8tn21q3pn90.apps.googleusercontent.com',
+    iosClientId: '476263611129-lncnue0djf1r8qlfek06norkqiidl056.apps.googleusercontent.com',
     iosBundleId: 'com.example.clubAppNew',
   );
 
