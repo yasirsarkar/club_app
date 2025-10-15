@@ -9,8 +9,9 @@ import 'providers/member_provider.dart';
 import 'providers/auth_provider.dart';
 import 'providers/donation_provider.dart';
 import 'providers/subscription_plan_provider.dart';
-import 'providers/dues_provider.dart'; // <-- নতুন DuesProvider ইম্পোর্ট
+import 'providers/dues_provider.dart';
 import 'providers/notice_provider.dart';
+import 'providers/event_provider.dart';
 
 import 'screens/login_screen.dart';
 import 'screens/admin_dashboard_screen.dart';
@@ -42,6 +43,7 @@ class ClubApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => SubscriptionPlanProvider()),
         ChangeNotifierProvider(create: (_) => DuesProvider()), // <-- এই লাইনটি যোগ করা হয়েছে
         ChangeNotifierProvider(create: (_) => NoticeProvider()),
+        ChangeNotifierProvider(create: (_) => EventProvider()), // <-- এই লাইনটি যোগ করুন
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

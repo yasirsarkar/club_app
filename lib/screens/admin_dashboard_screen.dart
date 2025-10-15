@@ -6,7 +6,7 @@ import '../providers/auth_provider.dart';
 import 'all_members_screen.dart';
 import 'dues_collection_screen.dart';
 import 'notice_screen.dart';
-import 'event_screen.dart';
+import 'event_list_screen.dart';
 import 'election_screen.dart';
 import 'settings_screen.dart';
 import 'member_approval_screen.dart';
@@ -47,7 +47,7 @@ class AdminDashboardScreen extends StatelessWidget {
         color: Colors.orange,
         subMenus: [
           SubMenuItem(title: 'নোটিশ ব্যবস্থাপনা', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NoticeScreen()))),
-          SubMenuItem(title: 'ইভেন্ট ব্যবস্থাপনা', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const EventScreen()))),
+          SubMenuItem(title: 'ইভেন্ট ব্যবস্থাপনা', onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const EventListScreen()))),
           SubMenuItem(title: 'ফটো গ্যালারি', onTap: () {}),
           SubMenuItem(title: 'সদস্যদের মতামত', onTap: () {}),
         ],

@@ -10,6 +10,7 @@ import 'all_members_screen.dart';
 import 'notice_screen.dart';
 import 'payment_history_screen.dart';
 import 'my_profile_screen.dart';
+import 'event_list_screen.dart'; // <-- ইভেন্ট স্ক্রিন ইম্পোর্ট
 
 class MemberDashboardScreen extends StatelessWidget {
   const MemberDashboardScreen({super.key});
@@ -24,24 +25,21 @@ class MemberDashboardScreen extends StatelessWidget {
       return const Scaffold(body: Center(child: Text('Could not load user data.')));
     }
 
-    // ব্যবহারকারীর প্ল্যান খুঁজে বের করা
     SubscriptionPlan? plan;
     if (user.subscriptionPlanId != null && user.subscriptionPlanId!.isNotEmpty) {
       try {
         plan = planProvider.plans.firstWhere((p) => p.id == user.subscriptionPlanId);
       } catch (e) {
-        plan = null; // যদি কোনো কারণে প্ল্যান খুঁজে না পাওয়া যায়
+        plan = null;
       }
     }
 
-    // বকেয়া মাস হিসাব করা
     int dueMonths = 0;
     if (user.subscriptionPlanId != null) {
       if (user.paidUpTo != null && user.paidUpTo!.isNotEmpty) {
         final now = DateTime.now();
         final lastPaidParts = user.paidUpTo!.split('-');
         final lastPaidDate = DateTime(int.parse(lastPaidParts[0]), int.parse(lastPaidParts[1]));
-
         dueMonths = (now.year - lastPaidDate.year) * 12 + (now.month - lastPaidDate.month);
       } else {
         dueMonths = 1;
@@ -99,7 +97,7 @@ class MemberDashboardScreen extends StatelessWidget {
             ),
             const SizedBox(height: 24),
 
-            // --- নতুন "My Subscription" কার্ড ---
+            // --- "My Subscription" কার্ড ---
             if (plan != null)
               Card(
                 elevation: 4,
@@ -163,6 +161,13 @@ class MemberDashboardScreen extends StatelessWidget {
                   title: 'সদস্য তালিকা',
                   onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AllMembersScreen())),
                 ),
+                // --- পরিবর্তনটি এখানে ---
+                _buildDashboardCard(
+                  context,
+                  icon: Icons.event_available_outlined,
+                  title: 'ইভেন্ট',
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const EventListScreen())),
+                ),
                 _buildDashboardCard(
                   context,
                   icon: Icons.campaign_outlined,
@@ -173,7 +178,7 @@ class MemberDashboardScreen extends StatelessWidget {
                   context,
                   icon: Icons.person_outline,
                   title: 'আমার প্রোফাইল',
-                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MyProfileScreen())),  /* TODO: Navigate to User's Own Profile Edit Screen */
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MyProfileScreen())),
                 ),
               ],
             ),
