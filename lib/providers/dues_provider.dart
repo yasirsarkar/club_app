@@ -30,6 +30,7 @@ class DuesProvider with ChangeNotifier {
       final String currentMonth = DateFormat('yyyy-MM').format(DateTime.now());
 
       final plansFuture = _firestore.collection('subscription_plans').get();
+      // subscriptionPlanId আছে এমন সব সদস্যকে আনা হচ্ছে
       final membersFuture = _firestore.collection('members').where('subscriptionPlanId', isNotEqualTo: null).get();
       final transactionsFuture = _firestore.collection('transactions').where('paymentForMonth', isEqualTo: currentMonth).get();
 
@@ -40,26 +41,24 @@ class DuesProvider with ChangeNotifier {
       final transactionsSnapshot = results[2] as QuerySnapshot;
 
       final List<SubscriptionPlan> plans = plansSnapshot.docs.map((doc) => SubscriptionPlan.fromMap(doc.id, doc.data() as Map<String, dynamic>)).toList();
-      final List<Member> members = membersSnapshot.docs.map((doc) => Member.fromMap(doc.id, doc.data() as Map<String, dynamic>)).toList();
+      final List<Member> membersWithPlans = membersSnapshot.docs.map((doc) => Member.fromMap(doc.id, doc.data() as Map<String, dynamic>)).toList();
       final List<DocumentSnapshot> transactions = transactionsSnapshot.docs;
 
       final List<MemberWithDueStatus> tempUnpaid = [];
       final List<MemberWithDueStatus> tempPaid = [];
 
-      for (var member in members) {
+      for (var member in membersWithPlans) {
         final plan = plans.firstWhere((p) => p.id == member.subscriptionPlanId, orElse: () => SubscriptionPlan(id: '', planName: 'N/A', amount: 0, description: ''));
         if (plan.id.isEmpty) continue;
 
-        // --- পরিবর্তনটি এখানে ---
-        // firstWhere-এর পরিবর্তে একটি নিরাপদ লুপ ব্যবহার করা হয়েছে
         DocumentSnapshot? transaction;
         for (final t in transactions) {
-          if (t['memberId'] == member.id) {
+          // Firestore-এ ডেটা স্ট্রিং হিসেবে সেভ হতে পারে, তাই toString() ব্যবহার করা নিরাপদ
+          if (t['memberId'].toString() == member.id.toString()) {
             transaction = t;
             break;
           }
         }
-        // --- পরিবর্তন শেষ ---
 
         if (transaction != null) {
           tempPaid.add(MemberWithDueStatus(
@@ -87,23 +86,37 @@ class DuesProvider with ChangeNotifier {
     }
   }
 
-  // lib/providers/dues_provider.dart ফাইলের ভেতরে
-
-  Future<void> recordPayment(String memberId, double amount, String recordedByUid) async {
-    final String currentMonth = DateFormat('yyyy-MM').format(DateTime.now());
+  // --- নতুন ফাংশন ---
+  Future<void> recordMultiMonthPayment(String memberId, double amountPerMonth, List<String> months, String recordedByUid) async {
     try {
-      await _firestore.collection('transactions').add({
-        'memberId': memberId,
-        'amount': amount,
-        'date': Timestamp.now(),
-        'paymentForMonth': currentMonth,
-        'type': 'Subscription',
-        'recordedBy': recordedByUid,
-      });
-      // পেমেন্ট রেকর্ড হওয়ার পর তালিকাটি রিফ্রেশ করা হচ্ছে
+      final firestore = FirebaseFirestore.instance;
+      final batch = firestore.batch();
+
+      for (final month in months) {
+        final transactionRef = firestore.collection('transactions').doc();
+        batch.set(transactionRef, {
+          'memberId': memberId,
+          'amount': amountPerMonth,
+          'date': Timestamp.now(),
+          'paymentForMonth': month,
+          'type': 'Subscription',
+          'recordedBy': recordedByUid,
+        });
+      }
+
+      months.sort();
+      final lastPaidMonth = months.last;
+      final memberRef = firestore.collection('members').doc(memberId);
+      batch.update(memberRef, {'paidUpTo': lastPaidMonth});
+
+      final userRef = firestore.collection('users').doc(memberId);
+      batch.update(userRef, {'paidUpTo': lastPaidMonth});
+
+      await batch.commit();
       await fetchDuesStatusForCurrentMonth();
+
     } catch (e) {
-      print('Error recording payment: $e');
+      print('Error recording multi-month payment: $e');
       rethrow;
     }
   }

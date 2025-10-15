@@ -1,43 +1,65 @@
+// lib/providers/member_provider.dart
+
 import 'dart:async';
+import 'package:cloud_firestore/cloud_firestore.dart'; // Firestore ইম্পোর্ট করুন
 import 'package:flutter/material.dart';
 import '../models/member_model.dart';
-import '../services/member_service.dart';
 
 class MemberProvider with ChangeNotifier {
-  final MemberService _service;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   List<Member> _members = [];
-  StreamSubscription<List<Member>>? _sub;
+  StreamSubscription<QuerySnapshot>? _sub;
 
-  MemberProvider({MemberService? service})
-      : _service = service ?? MemberService() {
-    _listen();
+  MemberProvider() {
+    fetchMembers();
   }
 
-  void _listen() {
-    _sub = _service.membersStream().listen((list) {
-      _members = list;
+  void fetchMembers() {
+    _sub = _firestore.collection('members').snapshots().listen((snapshot) {
+      _members = snapshot.docs.map((doc) => Member.fromMap(doc.id, doc.data())).toList();
       notifyListeners();
-    }, onError: (err) {
-      debugPrint('Member stream error: $err');
     });
   }
 
   List<Member> get members => _members;
 
-  Future<void> addMember(Member m) async {
-    await _service.addMember(m);
+  Future<void> addMember(Member member) async {
+    // TODO: Add member logic should also create a corresponding 'users' document
+    await _firestore.collection('members').doc(member.id).set(member.toMap());
   }
 
-  Future<void> updateMember(Member m) async {
-    await _service.updateMember(m);
+  // --- এই ফাংশনটিতে পরিবর্তন আনা হয়েছে ---
+  Future<void> updateMember(Member member) async {
+    try {
+      final batch = _firestore.batch();
+
+      // ১. 'members' কালেকশন আপডেট করা
+      final memberRef = _firestore.collection('members').doc(member.id);
+      batch.update(memberRef, member.toMap());
+
+      // ২. 'users' কালেকশনও আপডেট করা
+      final userRef = _firestore.collection('users').doc(member.id);
+      batch.update(userRef, {
+        'subscriptionPlanId': member.subscriptionPlanId,
+        'paidUpTo': member.paidUpTo,
+      });
+
+      await batch.commit();
+    } catch (e) {
+      print('Error updating member in both collections: $e');
+      rethrow;
+    }
   }
 
-  Future<void> deleteMember(String id) async {
-    await _service.deleteMember(id);
+  Future<void> deleteMember(String memberId) async {
+    final batch = _firestore.batch();
+    batch.delete(_firestore.collection('members').doc(memberId));
+    batch.delete(_firestore.collection('users').doc(memberId));
+    await batch.commit();
   }
 
   @override
-  Future<void> dispose() async {
+  void dispose() {
     _sub?.cancel();
     super.dispose();
   }

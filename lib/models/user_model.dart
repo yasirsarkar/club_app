@@ -8,6 +8,8 @@ class UserModel {
   final String? address;
   final String? bloodGroup;
   final String? profession;
+  final String? paidUpTo;
+  final String? subscriptionPlanId;
 
   UserModel({
     required this.uid,
@@ -19,5 +21,7 @@ class UserModel {
     this.address,
     this.bloodGroup,
     this.profession,
+    this.paidUpTo,
+    this.subscriptionPlanId,
   });
 }

@@ -1,9 +1,15 @@
+// lib/screens/member_dashboard_screen.dart
+
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import '../models/subscription_plan_model.dart';
 import '../providers/auth_provider.dart';
-import 'all_members_screen.dart'; // নতুন Member List স্ক্রিন
-import 'notice_screen.dart'; // নোটিশ স্ক্রিন
-import 'plan_management_screen.dart';
+import '../providers/subscription_plan_provider.dart';
+import 'all_members_screen.dart';
+import 'notice_screen.dart';
+import 'payment_history_screen.dart';
+import 'my_profile_screen.dart';
 
 class MemberDashboardScreen extends StatelessWidget {
   const MemberDashboardScreen({super.key});
@@ -11,11 +17,35 @@ class MemberDashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
+    final planProvider = Provider.of<SubscriptionPlanProvider>(context);
     final user = authProvider.user;
 
-    // যদি কোনো কারণে ইউজার লোড না হয়
     if (user == null) {
       return const Scaffold(body: Center(child: Text('Could not load user data.')));
+    }
+
+    // ব্যবহারকারীর প্ল্যান খুঁজে বের করা
+    SubscriptionPlan? plan;
+    if (user.subscriptionPlanId != null && user.subscriptionPlanId!.isNotEmpty) {
+      try {
+        plan = planProvider.plans.firstWhere((p) => p.id == user.subscriptionPlanId);
+      } catch (e) {
+        plan = null; // যদি কোনো কারণে প্ল্যান খুঁজে না পাওয়া যায়
+      }
+    }
+
+    // বকেয়া মাস হিসাব করা
+    int dueMonths = 0;
+    if (user.subscriptionPlanId != null) {
+      if (user.paidUpTo != null && user.paidUpTo!.isNotEmpty) {
+        final now = DateTime.now();
+        final lastPaidParts = user.paidUpTo!.split('-');
+        final lastPaidDate = DateTime(int.parse(lastPaidParts[0]), int.parse(lastPaidParts[1]));
+
+        dueMonths = (now.year - lastPaidDate.year) * 12 + (now.month - lastPaidDate.month);
+      } else {
+        dueMonths = 1;
+      }
     }
 
     return Scaffold(
@@ -44,7 +74,7 @@ class MemberDashboardScreen extends StatelessWidget {
                   children: [
                     CircleAvatar(
                       radius: 40,
-                      backgroundImage: (user.displayName != null) // TODO: Use user's actual image from Firestore
+                      backgroundImage: (user.displayName != null) // TODO: Use user's actual image
                           ? const AssetImage('assets/images/profile_placeholder.png') as ImageProvider
                           : const AssetImage('assets/images/profile_placeholder.png') as ImageProvider,
                       backgroundColor: Colors.grey.shade200,
@@ -69,8 +99,55 @@ class MemberDashboardScreen extends StatelessWidget {
             ),
             const SizedBox(height: 24),
 
-            // --- নেভিগেশন গ্রিড ---
-            Text('Essential Links', style: Theme.of(context).textTheme.titleLarge),
+            // --- নতুন "My Subscription" কার্ড ---
+            if (plan != null)
+              Card(
+                elevation: 4,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('My Subscription', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                      const Divider(height: 20),
+                      ListTile(
+                        leading: const Icon(Icons.card_membership, color: Colors.blue),
+                        title: const Text('Current Plan'),
+                        subtitle: Text('${plan.planName} - ৳${plan.amount.toStringAsFixed(0)}/month'),
+                      ),
+                      ListTile(
+                        leading: Icon(dueMonths <= 0 ? Icons.check_circle : Icons.error, color: dueMonths <= 0 ? Colors.green : Colors.red),
+                        title: const Text('Payment Status'),
+                        subtitle: Text(dueMonths <= 0 ? 'All dues are clear' : '$dueMonths month(s) pending'),
+                      ),
+                      const SizedBox(height: 10),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          TextButton.icon(
+                            icon: const Icon(Icons.history),
+                            label: const Text('View History'),
+                            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PaymentHistoryScreen())),
+                          ),
+                          ElevatedButton(
+                            onPressed: () {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Online payment feature is coming soon!'))
+                              );
+                            },
+                            child: const Text('Pay Now'),
+                          ),
+                        ],
+                      )
+                    ],
+                  ),
+                ),
+              ),
+
+            const SizedBox(height: 24),
+
+            Text('Quick Links', style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: 16),
             GridView.count(
               crossAxisCount: 2,
@@ -88,12 +165,6 @@ class MemberDashboardScreen extends StatelessWidget {
                 ),
                 _buildDashboardCard(
                   context,
-                  icon: Icons.payment,
-                  title: 'চাঁদার ইতিহাস',
-                  onTap: () { /* TODO: Navigate to Payment History Screen */ },
-                ),
-                _buildDashboardCard(
-                  context,
                   icon: Icons.campaign_outlined,
                   title: 'নোটিশ বোর্ড',
                   onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const NoticeScreen())),
@@ -102,7 +173,7 @@ class MemberDashboardScreen extends StatelessWidget {
                   context,
                   icon: Icons.person_outline,
                   title: 'আমার প্রোফাইল',
-                  onTap: () { /* TODO: Navigate to User's Own Profile Screen */ },
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MyProfileScreen())),  /* TODO: Navigate to User's Own Profile Edit Screen */
                 ),
               ],
             ),
@@ -112,7 +183,6 @@ class MemberDashboardScreen extends StatelessWidget {
     );
   }
 
-  // একটি হেল্পার ফাংশন, যা প্রতিটি কার্ড তৈরি করে
   Widget _buildDashboardCard(BuildContext context, {required IconData icon, required String title, required VoidCallback onTap}) {
     return Card(
       elevation: 2,

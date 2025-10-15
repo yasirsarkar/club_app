@@ -10,6 +10,7 @@ import 'providers/auth_provider.dart';
 import 'providers/donation_provider.dart';
 import 'providers/subscription_plan_provider.dart';
 import 'providers/dues_provider.dart'; // <-- নতুন DuesProvider ইম্পোর্ট
+import 'providers/notice_provider.dart';
 
 import 'screens/login_screen.dart';
 import 'screens/admin_dashboard_screen.dart';
@@ -18,6 +19,7 @@ import 'screens/member_dashboard_screen.dart';
 import 'screens/pending_approval_screen.dart';
 import 'screens/suspended_account_screen.dart';
 import 'screens/complete_profile_screen.dart';
+
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -39,6 +41,7 @@ class ClubApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => DonationProvider()),
         ChangeNotifierProvider(create: (_) => SubscriptionPlanProvider()),
         ChangeNotifierProvider(create: (_) => DuesProvider()), // <-- এই লাইনটি যোগ করা হয়েছে
+        ChangeNotifierProvider(create: (_) => NoticeProvider()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

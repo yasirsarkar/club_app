@@ -1,3 +1,5 @@
+// lib/providers/auth_provider.dart
+
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -11,7 +13,6 @@ class AuthProvider with ChangeNotifier {
 
   app_user.UserModel? _user;
   app_user.UserModel? get user => _user;
-
   bool get isLoggedIn => _user != null;
 
   AuthProvider() {
@@ -27,6 +28,7 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  // --- এই ফাংশনটিতে পরিবর্তন আনা হয়েছে ---
   Future<void> _fetchUserData(User firebaseUser) async {
     try {
       final docSnapshot = await _firestore.collection('users').doc(firebaseUser.uid).get();
@@ -34,16 +36,20 @@ class AuthProvider with ChangeNotifier {
         final data = docSnapshot.data()!;
         _user = app_user.UserModel(
           uid: firebaseUser.uid,
-          email: firebaseUser.email,
-          displayName: firebaseUser.displayName,
+          email: data['email'],
+          displayName: data['displayName'],
           role: data['role'] ?? 'General Member',
           status: data['status'] ?? 'Pending',
           phone: data['phone'],
           address: data['address'],
           bloodGroup: data['bloodGroup'],
           profession: data['profession'],
+          // এই দুটি লাইন নতুন যোগ করা হয়েছে
+          paidUpTo: data['paidUpTo'],
+          subscriptionPlanId: data['subscriptionPlanId'],
         );
       } else {
+        // নতুন ব্যবহারকারী তৈরির যুক্তি অপরিবর্তিত আছে
         final defaultRole = 'General Member';
         final defaultStatus = 'Pending';
         await _firestore.collection('users').doc(firebaseUser.uid).set({
@@ -72,15 +78,11 @@ class AuthProvider with ChangeNotifier {
     try {
       final firestore = FirebaseFirestore.instance;
       final batch = firestore.batch();
-
       final userRef = firestore.collection('users').doc(_user!.uid);
       batch.update(userRef, dataToUpdate);
-
       final memberRef = firestore.collection('members').doc(_user!.uid);
       batch.update(memberRef, dataToUpdate);
-
       await batch.commit();
-
       await _fetchUserData(_auth.currentUser!);
       notifyListeners();
     } catch (e) {
@@ -104,10 +106,8 @@ class AuthProvider with ChangeNotifier {
       final firebaseUser = userCredential.user;
       if (firebaseUser == null) return 'User creation failed.';
       await firebaseUser.updateDisplayName(name);
-
       final defaultRole = 'General Member';
       final defaultStatus = 'Pending';
-
       await _firestore.collection('users').doc(firebaseUser.uid).set({
         'email': firebaseUser.email,
         'displayName': name,

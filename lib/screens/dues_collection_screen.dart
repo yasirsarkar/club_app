@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../providers/dues_provider.dart';
 import '../providers/auth_provider.dart';
 import '../models/member_due_status.dart';
+import 'record_payment_screen.dart'; // <-- নতুন স্ক্রিন ইম্পোর্ট করা হয়েছে
 
 class DuesCollectionScreen extends StatefulWidget {
   const DuesCollectionScreen({super.key});
@@ -64,11 +65,9 @@ class _DuesCollectionScreenState extends State<DuesCollectionScreen>
     if (members.isEmpty) {
       return Center(
           child: Text(isDueList
-              ? 'All dues are paid for this month!'
-              : 'No payments recorded yet.'));
+              ? 'No dues for this month!'
+              : 'No payments recorded yet for this month.'));
     }
-
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
     return ListView.builder(
       itemCount: members.length,
@@ -79,39 +78,27 @@ class _DuesCollectionScreenState extends State<DuesCollectionScreen>
           child: ListTile(
             title: Text(item.member.name,
                 style: const TextStyle(fontWeight: FontWeight.bold)),
-            subtitle: Text('Plan: ${item.plan.planName}'),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Plan: ${item.plan.planName} (৳${item.plan.amount.toStringAsFixed(0)})'),
+                if (item.member.paidUpTo != null && item.member.paidUpTo!.isNotEmpty)
+                  Text('Paid up to: ${DateFormat('MMM, yyyy').format(DateTime.parse('${item.member.paidUpTo}-01'))}', style: const TextStyle(color: Colors.black54)),
+              ],
+            ),
             trailing: isDueList
                 ? ElevatedButton(
               onPressed: () {
-                // কনফার্মেশন ডায়ালগ দেখানো হচ্ছে
-                showDialog(
-                    context: context,
-                    builder: (ctx) => AlertDialog(
-                      title: const Text('Confirm Payment'),
-                      content: Text('Are you sure you want to record payment of ৳${item.plan.amount.toStringAsFixed(0)} for ${item.member.name}?'),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(ctx),
-                          child: const Text('Cancel'),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            final currentUser = authProvider.user;
-                            if (currentUser != null) {
-                              Provider.of<DuesProvider>(context, listen: false).recordPayment(
-                                item.member.id,
-                                item.plan.amount,
-                                currentUser.uid,
-                              );
-                            }
-                            Navigator.pop(ctx);
-                          },
-                          child: const Text('Confirm'),
-                        )
-                      ],
-                    ));
+                // নতুন পেমেন্ট রেকর্ড স্ক্রিনে নেভিগেট করা
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) =>
+                        RecordPaymentScreen(memberDueStatus: item),
+                  ),
+                );
               },
-              child: Text('Record ৳${item.plan.amount.toStringAsFixed(0)}'),
+              child: const Text('Record Payment'),
             )
                 : Text(
               'Paid on\n${DateFormat('dd/MM/yy').format(item.paymentDate!)}',

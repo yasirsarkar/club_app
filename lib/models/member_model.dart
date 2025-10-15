@@ -12,6 +12,7 @@ class Member {
   final String? bloodGroup;
   final String? profession;
   final String? subscriptionPlanId;
+  final String? paidUpTo;
 
   Member({
     required this.id,
@@ -24,6 +25,7 @@ class Member {
     this.bloodGroup,
     this.profession,
     this.subscriptionPlanId,
+    this.paidUpTo,
   });
 
   factory Member.fromMap(String id, Map<String, dynamic> data) {
@@ -38,6 +40,7 @@ class Member {
       bloodGroup: data['bloodGroup'],
       profession: data['profession'],
       subscriptionPlanId: data['subscriptionPlanId'], // Map this field
+      paidUpTo: data['paidUpTo'],
     );
   }
 
@@ -53,6 +56,7 @@ class Member {
       'bloodGroup': bloodGroup,
       'profession': profession,
       'subscriptionPlanId': subscriptionPlanId, // Map this field
+      'paidUpTo': paidUpTo,
     };
   }
 }
